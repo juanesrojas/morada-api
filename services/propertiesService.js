@@ -1,6 +1,8 @@
 const PropertyModel = require('./../models/propertyModel');
+const moongoose = require("mongoose");
 const responseOk = require('../utils/responseOk');
 const responseError = require('../utils/responseError');
+const {ObjectId} = moongoose.Types;
 
 const properties = async (filter) =>{
     try{
@@ -31,17 +33,63 @@ const filterMapping = (filter) =>{
 
 const property = async (propertyId) =>{
     try{
-        const checkProperty = await PropertyModel.findById(propertyId)
+        const checkProperty1 = await PropertyModel.findById(propertyId)
                             .populate("ownerId","name email phone")
                             .exec();
+
+        
+        const checkProperty = await PropertyModel.aggregate([
+            {$match : { _id: ObjectId(propertyId) }},
+
+            {
+                $lookup: {
+                  from: "businessType",
+                  localField: "businessType", // favorites
+                  foreignField: "id", // property
+                  as: "businessType",
+                },
+              },
+              {
+                $unwind: "$businessType",
+              },
+              {
+                $lookup: {
+                  from: "propertyType",
+                  localField: "propertyType", // favorites
+                  foreignField: "id", // property
+                  as: "propertyType",
+                },
+              },
+              {
+                $unwind: "$propertyType",
+              },
+
+              {
+                $lookup: {
+                  from: "cities",
+                  localField: "city", // favorites
+                  foreignField: "id", // property
+                  as: "city1",
+                },
+              },
+              {
+                $unwind: "$city1",
+              },
+
+
+
+            ]);
+ 
 
         if(checkProperty){
             console.log(`Propiedad ${propertyId}`);
             console.log(checkProperty);
-            return responseOk ({mensaje:`mostrando la propiedad ${propertyId}`,checkProperty}); 
+            const uniqueCheckProperty =checkProperty[0];
+            return responseOk ({mensaje:`mostrando la propiedad ${propertyId}`,uniqueCheckProperty}); 
         }
         return responseError(404,"Propiedad no encontrada");
     }catch(error){
+        console.log(error);
         return responseError(500,"server error");
     }
 };

@@ -21,6 +21,7 @@ const showProperty = async (req, res) =>{
     try{
         const propertyId = req.params.propertyId; //debe ser por URL, no por query
         const {statusHttp,response} = await property(propertyId);
+        console.log("response ", response);
         res.status(statusHttp).json(response);
     } catch (error){//si no se resuelve la excepción , la petición sigue en cola en el servidor, importante que siempre resolvamos las solicitudes
         res.status(500).send(error);            

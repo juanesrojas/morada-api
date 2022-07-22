@@ -1,5 +1,6 @@
 const express = require('express');
 const app = express();
+const cors = require('cors');
 const mongo = require('./connection/mongoconn');
 require('dotenv').config();
 
@@ -7,6 +8,8 @@ app.use(express.json());//que utilice json para que lo sepa interpretar
 app.use(express.urlencoded({extended: false})); //para resolver url que llegan con caracteres extraños
 
 app.use('/static',express.static('public')); //volver publico una carpeta estática
+
+app.use(cors());
 
 const port = 3001; //no escoger el 3000 para que no nos genere conflicto con el de react que estamos usando el 3000
 
