@@ -140,15 +140,13 @@ const property = async (propertyId) =>{
 
 const createProperty = async(propertyData) =>{
     try{
-        if(propertyData.userToken==='xxxyyyzzzwwwttt'){
-            delete propertyData['userToken'];
-            const property = new PropertyModel(propertyData);
-            await property.save();//este proceso es asincrónico. hay que volverlo sincrónico, esto se hace con el async / await
-            console.log('Propiedad agregada');
-            return responseOk({property});
-            
-        }
-            return responseError(401," token usuario invalido");   
+
+          delete propertyData['userToken'];
+          const property = new PropertyModel(propertyData);
+          await property.save();//este proceso es asincrónico. hay que volverlo sincrónico, esto se hace con el async / await
+          console.log('Propiedad agregada');
+          return responseOk({property});
+
     }catch (error){
         console.log('error',error);
         return responseError(500,"server error");
