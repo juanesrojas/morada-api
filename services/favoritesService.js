@@ -46,11 +46,11 @@ const newFavorite = async (propertyId, userId) =>{
 const favorites = async (userId) =>{
     try{
 
-        const checkFavorites = await FavoriteModel.find({userId:userId});
+        const checkFavorites1 = await FavoriteModel.find({userId:userId});
 
-        if(checkFavorites){
+        if(checkFavorites1){
             console.log(`por aqui voy`);
-            const favoritesByUser = await FavoriteModel.aggregate([
+            const checkFavorites = await FavoriteModel.aggregate([
                 {
                     $match:{
                         userId : ObjectId(userId)
@@ -72,12 +72,47 @@ const favorites = async (userId) =>{
                       property: "$property",
                     },
                   },
+                  {
+                    $lookup: {
+                      from: "businessType",
+                      localField: "property.businessType", // favorites
+                      foreignField: "id", // property
+                      as: "property.businessType",
+                    },
+                  },
+                  {
+                    $unwind: "$property.businessType",
+                  },
+                  {
+                    $lookup: {
+                      from: "propertyType",
+                      localField: "property.propertyType", // favorites
+                      foreignField: "id", // property
+                      as: "property.propertyType",
+                    },
+                  },
+                  {
+                    $unwind: "$property.propertyType",
+                  },
     
+                  {
+                    $lookup: {
+                      from: "cities",
+                      localField: "property.city", // favorites
+                      foreignField: "id", // property
+                      as: "property.city1",
+                    },
+                  },
+                  {
+                    $unwind: "$property.city1",
+                  },
+                  
+                  {$project:{"cityName":"$property.city1.name","zoneName": {$arrayElemAt: [ "$property.city1.zones", "$property.zone" ]},"title":"$property.title", "city":"$property.city","zone":"$property.zone", "description":"$property.description", "ownerId":"$property.ownerId","propertyType":"$property.propertyType", "businessType":"$property.businessType", "mainImage":"$property.mainImage", "value":"$property.value","_id":"$property._id"}}
             ]);
 
 
             console.log(`Propiedades favoritas encontradas`);
-            console.log('favoritesByUser',favoritesByUser);
+            console.log('favoritesByUser',checkFavorites);
 
             return responseOk ({mensaje:`mostrando las propiedades vavoritas del usuario ${userId}`,checkFavorites});    
         }
